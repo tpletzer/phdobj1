@@ -5,9 +5,10 @@
 #SBATCH --account=uoo03104
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --time=01:00:00
+#SBATCH --time=05:00:00
 #SBATCH --hint=multithread
-#SBATCH --mem=4G
+#SBATCH --mem=3G
+#SBATCH --array=0-16
 
 #SBATCH --output=test.%j.out
 #SBATCH --error=test.%j.err
@@ -17,4 +18,8 @@
 
 #conda activate xesmf_stable_env
 
-srun python /home/pleta922/phdobj1/daily_stats.py
+NUMFILES=62
+START=$(python -c "print($SLURM_ARRAY_TASK_ID * $NUMFILES)")
+END=$(python -c "print($START + $NUMFILES)")
+
+srun python /home/pleta922/phdobj1/daily_stats.py -s $START -e $END
