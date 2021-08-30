@@ -15,6 +15,7 @@ def pretime(ds):
     return ds
 
 def daily_quantiles(*, start_index: int=0, end_index: int=-1):
+    q_frac = [0.05, 0.25, 0.50, 0.75, 0.95]
     dst_ds = xr.open_dataset('/nesi/nobackup/uoo03104/clim_summerpost/ds_clim_d03201801.nc')
     #daily averages
     f = open('/nesi/nobackup/uoo03104/ymdsummer_all.pkl', 'rb') #open dict with keys year,month,day
@@ -33,12 +34,10 @@ def daily_quantiles(*, start_index: int=0, end_index: int=-1):
         for v in ds.var():
             print(v)
             # for each var, calculate the quantiles
-            q = ds[v].chunk({'Time':None}).quantile([0.05, 0.25, 0.50, 0.75, 0.95], dim="Time") 
-            mf_ds['q0.05_' + v + ymd] = (("south_north", "west_east"), q[0].values)
-            mf_ds['q0.25_' + v + ymd] = (("south_north", "west_east"), q[1].values)
-            mf_ds['q0.50_' + v + ymd] = (("south_north", "west_east"), q[2].values)
-            mf_ds['q0.75_' + v + ymd] = (("south_north", "west_east"), q[3].values)
-            mf_ds['q0.95_' + v + ymd] = (("south_north", "west_east"), q[4].values)
+            q = ds[v].chunk({'Time':None}).quantile(q_frac, dim="Time")
+            for j in range(len(q_frac)):
+                vname = f'q{q_frac[j]:.3f}_{v}_{ymd}' 
+            	mf_ds[vname] = (("south_north", "west_east"), q[j].values)
 
         mf_ds.coords["XLAT"] = (("south_north", "west_east"), dst_ds.XLAT.values)
         mf_ds.coords["XLONG"] = (("south_north", "west_east"), dst_ds.XLONG.values)
