@@ -16,7 +16,10 @@ def pretime(ds):
 
 def daily_stats(*, start_index: int=0, end_index: int=-1):
     #daily averages
-    f = open('/nesi/nobackup/uoo03104/ymdsummer_all.pkl', 'rb') #open dict with keys year,month,day
+    #f = open('/nesi/nobackup/uoo03104/ymdsummer_all.pkl', 'rb') #open dict with keys year,month,day
+    #ymd2files2 = pickle.load(f)
+
+    f = open('/nesi/nobackup/uoo03104/ymdsummer_tbd.pkl', 'rb') #open dict with files_done removed
     ymd2files2 = pickle.load(f)
 
     #loop through the days in the dict
