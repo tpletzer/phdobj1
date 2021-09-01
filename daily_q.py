@@ -37,7 +37,7 @@ def daily_quantiles(*, start_index: int=0, end_index: int=-1):
             q = ds[v].chunk({'Time':None}).quantile(q_frac, dim="Time")
             for j in range(len(q_frac)):
                 vname = f'q{q_frac[j]:.3f}_{v}_{ymd}' 
-            	mf_ds[vname] = (("south_north", "west_east"), q[j].values)
+                mf_ds[vname] = (("south_north", "west_east"), q[j].values)
 
         mf_ds.coords["XLAT"] = (("south_north", "west_east"), dst_ds.XLAT.values)
         mf_ds.coords["XLONG"] = (("south_north", "west_east"), dst_ds.XLONG.values)
