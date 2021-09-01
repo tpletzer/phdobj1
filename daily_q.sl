@@ -1,7 +1,7 @@
 #!/bin/bash -e
 #SBATCH --profile task
 
-#SBATCH --job-name=dailystats
+#SBATCH --job-name=qstats
 #SBATCH --account=uoo03104
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
