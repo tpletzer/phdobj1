@@ -37,12 +37,12 @@ mf_ds['std_' + v + ymd] = (("south_north", "west_east"), ds[v].std(dim='Time').v
 mf_ds['med_' + v + ymd] = (("south_north", "west_east"), ds[v].median(dim='Time').values)
 mf_ds['max_' + v + ymd] = (("south_north", "west_east"), ds[v].max(dim='Time').values)
 mf_ds['min_' + v + ymd] = (("south_north", "west_east"), ds[v].min(dim='Time').values)
-q = ds[v].chunk({'Time':None}).quantile([0.05, 0.25, 0.50, 0.75, 0.95], dim="Time") 
-mf_ds['q0.05_' + v + ymd] = (("south_north", "west_east"), q[0].values)
-mf_ds['q0.25_' + v + ymd] = (("south_north", "west_east"), q[1].values)
-mf_ds['q0.50_' + v + ymd] = (("south_north", "west_east"), q[2].values)
-mf_ds['q0.75_' + v + ymd] = (("south_north", "west_east"), q[3].values)
-mf_ds['q0.95_' + v + ymd] = (("south_north", "west_east"), q[4].values)
+#q = ds[v].chunk({'Time':None}).quantile([0.05, 0.25, 0.50, 0.75, 0.95], dim="Time") 
+#mf_ds['q0.05_' + v + ymd] = (("south_north", "west_east"), q[0].values)
+#mf_ds['q0.25_' + v + ymd] = (("south_north", "west_east"), q[1].values)
+#mf_ds['q0.50_' + v + ymd] = (("south_north", "west_east"), q[2].values)
+#mf_ds['q0.75_' + v + ymd] = (("south_north", "west_east"), q[3].values)
+#mf_ds['q0.95_' + v + ymd] = (("south_north", "west_east"), q[4].values)
 
 t2 = time.time()
 

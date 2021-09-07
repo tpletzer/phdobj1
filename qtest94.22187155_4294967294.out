@@ -1,0 +1,1 @@
+srun python /home/pleta922/phdobj1/daily_q.py -s 1034 -e 1045

@@ -7,18 +7,18 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --time=05:00:00
 #SBATCH --hint=multithread
-#SBATCH --mem=3G
-#SBATCH --array=0-16
+#SBATCH --mem=15G
+#SBATCH --array=0-5
 
 #SBATCH --output=test.%j.out
 #SBATCH --error=test.%j.err
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-user=tamara.pletzer@postgrad.otago.ac.nz
 
-
+#445 files tbd
 #conda activate xesmf_stable_env
 
-NUMFILES=62
+NUMFILES=89
 START=$(python -c "print($SLURM_ARRAY_TASK_ID * $NUMFILES)")
 END=$(python -c "print($START + $NUMFILES)")
 

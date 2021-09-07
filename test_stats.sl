@@ -5,9 +5,9 @@
 #SBATCH --account=uoo03104
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --time=01:30:00
+#SBATCH --time=00:10:00
 #SBATCH --hint=multithread
-#SBATCH --mem-per-cpu=3G
+#SBATCH --mem-per-cpu=2G
 
 #SBATCH --output=test.%j.out
 #SBATCH --error=test.%j.err
