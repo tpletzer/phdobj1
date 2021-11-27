@@ -9,13 +9,17 @@ import salem
 from salem import open_wrf_dataset, get_demo_file
 
 
-def spatialsumrunoff(*, dir: str, domain: str='NVL', month:int=None, year:int=None):
+def main(*, varname: str, wrfgridfile: str, inputfiles: str, outputfile: str):
 	"""
-	Computes daily cumulative surface runoff over a sub domain.
+	Plotting subplots
 
-	@param dir directory of files
-	@param domain name of the domain
-	@param month month (str), if None then every month
-	@param year year (str), if None then every year
+	@param varname (str) variable name
+	@param wrfgridfile (str) wrf file with grid info
+	@param inputfiles (str) input files
+	@param outputfile (str) name of output file
 
 	"""
+
+
+if __name__=='__main__':
+	defopt.run(main)
