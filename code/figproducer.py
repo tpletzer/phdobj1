@@ -48,14 +48,21 @@ def main(*, varname: str, wrfgridfile: str, inputfiles: str, outputfile: str):
     ncol = 2
     nrow= int(math.ceil(nmonth/ncol))
 
-    fig, axes = plt.subplots(nrow, ncol)
-    fig.suptitle(varname)
+    #fig, axes = plt.subplots(nrow, ncol)
+    #fig.suptitle(varname)
+    fig = plt.figure(figsize=(8, 7))
     for iplot in range(nmonth):
         i = iplot // ncol
         j = iplot % ncol
-        ds_new = get_varproj(ds_grid=ds_grid, ds_clim=files[iplot], var=varname)
-        axes[i, j].pcolormesh(ds_new[varname].isel(Time=0)) 
-        month, year = get_monthyear(files[iplot])
+        ds_new = get_varproj(ds_grid=ds_grid,
+                             ds_clim=files[iplot],
+                             var=varname)
+        proj = ds_new.salem.cartopy()
+        ax = plt.subplot(nrow, ncol, iplot + 1, projection=proj)
+        ds_new[varname].isel(Time=0).plot.pcolormesh(ax=ax, 
+                                     transform=proj)
+        # axes[i, j].pcolormesh(ds_new[varname].isel(Time=0)) 
+        # month, year = get_monthyear(files[iplot])
         #axes[i, j].title(f'{year}-{month}')
 
     plt.show()
