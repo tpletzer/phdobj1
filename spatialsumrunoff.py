@@ -3,7 +3,7 @@ import pandas as pd
 import xarray as xr
 import re
 import glob
-
+import numpy as np
 
 domains = {
 	'NVL': (slice(0, 239+1), slice(871, 987)), # slice(imin, imax+1), slice(jmin, jmax+1)
@@ -12,46 +12,55 @@ domains = {
 
 
 
-def spatialsumrunoff(*, dir: str, domain: str='NVL', month:int=None, year:int=None):
+def spatialsumrunoff(*, dir: str='/nesi/nobackup/uoo03104/dailysumrunoff_summerd03/', domain: str='NVL'):
 	"""
 	Computes daily cumulative surface runoff over a sub domain.
 
 	@param dir directory of files
 	@param domain name of the domain
-	@param month month (str), if None then every month
-	@param year year (str), if None then every year
 
 	"""
 
+	# open netcdf files
+	files = glob.glob(dir+'/ds_clim_dailysumrunoff_d03*.nc')
+	n = len(files)
+	days = np.zeros(n, dtype=np.int32)
+	months = np.zeros(n, dtype=np.int32)
+	years = np.zeros(n, dtype=np.int32)
+	sfcrunoffs = np.zeros(n, dtype=np.float64)
+	ifile = 0
+	
 	# mask sea
 	wrf_grid='/nesi/nobackup/uoo03104/all_files/sfc_wrfout_d03_2018021800_f023.nc'
 	ds_wrf = xr.open_dataset(wrf_grid)
 	mask = ds_wrf.LANDMASK.values.reshape((1035, 675))
+	
+	
+	for filename in files:
+		
+		m = re.search(r'(\d\d\d\d)(\d\d)(\d\d)\.nc$', filename)
+		year = m.group(1)
+		month = m.group(2)
+		daystr = m.group(3)
 
-	# open netcdf files
-	files = glob.glob(dir+'/ds_clim_dailysumrunoff_d03' + str(year) + str(month) + '*.nc')
-	days = []
-	months = []
-	sfcrunoffs = []
-	for file in files:
-		daystr = re.match(r'(\d\d)\.nc$').group(1)
-		ds = xr.open_dataset(file)
-		data = ds['sum_SFROFFd03' + str(year) + str(month) + daystr].values
+		ds = xr.open_dataset(filename) 
+		data = ds['sum_SFROFFd03' + year + month + daystr].values
 
 		# get the slice of the data for that domain
 		dom = domains[domain]
 
-		# masking of coastline
-		#roff = data[dom[0], dom[1]].sum(data) # sum over domain
-		roff = np.sum(data[dom[1], dom[0]]*mask[dom[1], dom[0]])
+		# TO DO masking of coastline
+		roff = np.sum(data[dom[1], dom[0]]*mask[dom[1], dom[0]]) # sum over domain
 
-		days.append(int(daystr)) # store result
-		months.append(month)
-		years.append(year)
-		sfcrunoffs.append(roff)
+		days[ifile]=int(daystr) # store result
+		months[ifile] = int(month)
+		years[ifile] = int(year)
+		sfcrunoffs[ifile] = roff
+		
+		ifile += 1
  
 	# save df
-	df = pd.DataFrame(days=days, months=months, years=years, sfcrunoffs=sfcrunoffs)
+	df = pd.DataFrame({'days': days, 'months': months, 'years': years, 'sfcrunoffs': sfcrunoffs})
 	df.to_csv(domain + '.csv')
 
 if __name__=='__main__':
