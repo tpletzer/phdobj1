@@ -29,7 +29,7 @@ def get_monthyear(filename):
 
     return month, year
 
-def plotsubdom(filename='sfc_wrfout_d03_2018021800_f023.nc', varnmae='HGT'):
+def plotsubdom(filename='sfc_wrfout_d03_2018021800_f023.nc', varname='HGT'):
 
     data = xr.open_dataset(filename)
 
