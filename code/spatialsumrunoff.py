@@ -7,7 +7,8 @@ import numpy as np
 
 domains = {
 	'NVL': (slice(0, 239+1), slice(871, 987)), # slice(imin, imax+1), slice(jmin, jmax+1)
-
+	'MDV': (slice(100, 250+1), slice(553, 790)),
+	'both': (slice(0, 250+1), slice(553, 987)),
 }
 
 
@@ -31,7 +32,7 @@ def spatialsumrunoff(*, dir: str='/nesi/nobackup/uoo03104/dailysumrunoff2_summer
 	ifile = 0
 	
 	# mask sea
-	wrf_grid='/nesi/nobackup/uoo03104/all_files/sfc_wrfout_d03_2018021800_f023.nc'
+	wrf_grid='/nesi/nobackup/uc03160/AMPS_data/AMPS_surface/all_files/sfc_wrfout_d03_2018021800_f023.nc'
 	ds_wrf = xr.open_dataset(wrf_grid)
 	#mask = ds_wrf.LANDMASK.values.reshape((1035, 675))
 	mask = ds_wrf.HGT.values.reshape((1035, 675))
@@ -99,27 +100,55 @@ def plotsumrunoff(csvfile='NVL.csv'):
 	#summer = data[(data['date'] >= dtmin) & (data['date'] < dtmax)]
 	#summer = data[data['date'].dt.month == 11]
 
+
+	#plot each summer timeseries on a seperate subplot
 	ncol=1
 	nrow = 7
-	fig, axes = plt.subplots(nrow, ncol, figsize=(15,10))
 
+	fig, axes = plt.subplots(nrow, ncol, figsize=(20,40), sharex=False, sharey=True)
 	for iplot in range(nrow):
 		i = iplot // ncol
 		dtmin = datetime(year=(i+2013), month=11, day=1)
 		dtmax = dtmin + timedelta(days=150)
 		summer = data[(data['date'] >= dtmin) & (data['date'] < dtmax)]
 		axes[i].plot(summer.date, summer.sfcrunoffs)
-		axes[i].set_ylim(bottom=0, top=1200000)
+		axes[i].set_ylim(bottom=data.sfcrunoffs.min(), top=data.sfcrunoffs.max())
+
+	fig.supxlabel("Date")
+	fig.supylabel("Daily total surface runoff (mm)")
+	fig.suptitle("Timeseries of daily surface runoff in " + csvfile.split(".")[0])
+	#plt.subplots_adjust(hspace=2.0)
+	plt.tight_layout()
+
+	plt.savefig('runoff2' + csvfile.split(".")[0] + '.png')
+	# plt.show()
+	
+
+	#nohup cp -r all_files/* . &
+
 
 	
-	plt.subplots_adjust(hspace=2.0)
-	plt.show()
 
+	# plot each summer timeseries on same fig	for iplot in range(nrow):
+	# new df where each col is sfc runoff from a different year
+	# and col with each month and day - time ordered 
 	
+	###IN PROGRESS
 
-	# plot each summer timeseries on a seperate subplot
-	plt.plot(summer.date, summer.sfcrunoffs)
-	plt.show()
+
+
+	# ncol=1
+	# nrow = 7
+	# i = iplot // ncol
+
+	# for iplot in range(nrow):
+	# i = iplot // ncol
+	# dtmin = datetime(year=(i+2013), month=11, day=1)
+	# dtmax = dtmin + timedelta(days=149)
+	# summer = data[(data['date'] >= dtmin) & (data['date'] < dtmax)]
+
+	# plt.plot(summer.date, summer.sfcrunoffs)
+	# plt.show()
 
 
 
@@ -127,7 +156,7 @@ def plotsumrunoff(csvfile='NVL.csv'):
 ####----------- code to analyze NVL.csv script
 import pandas as pd 
 
-csvfile='NVL.csv'
+csvfile='NVL_neg.csv'
 
 data = pd.read_csv(csvfile)
 
@@ -147,3 +176,29 @@ for i in data.itertuples():
 print(count)  ## 103 files
 
 #data.date.where(data.sfcrunoffs<0).count()
+
+
+# and for sfcrunoff >0 
+import pandas as pd 
+
+csvfile='NVL.csv'
+
+data = pd.read_csv(csvfile)
+
+dt = pd.to_datetime({'year': data.years,
+		                 'month': data.months,
+		                 'day': data.days})
+
+data['date'] = dt
+
+data.sort_values(by=['date'], inplace=True, ascending=True)
+
+count=0
+for i in data.itertuples():
+	if i.sfcrunoffs > 0:
+		print(i.date, i.sfcrunoffs)
+		count+=1
+print(count)
+
+
+
