@@ -70,7 +70,7 @@ def onedomplot(domain = 'NVL_new', wrf_grid='sfc_wrfout_d03_2018021800_f023.nc',
     mask_land = new.HGT.values.reshape((1035, 675))
     mask_land = xr.where(mask_land>0.0, 1.0, 0.0)
 
-    data = new[varname].values * mask_land
+    data = new[varname] * mask_land
     dom = domains[domain]
     sub = data[0, dom[1], dom[0]] # slice data over subdom, gives 2d array
  
