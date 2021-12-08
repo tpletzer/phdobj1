@@ -35,10 +35,13 @@ def plotsubdom(filename='sfc_wrfout_d03_2018021800_f023.nc', varname='HGT'):
 
     fig = plt.figure()
     ax = plt.axes()
-    data[varname].plot()
-    ax.add_patch(patches.Rectangle((0, 871), 239, 116, alpha=0.2, color='red'))
-    ax.add_patch(patches.Rectangle((100, 553), 150, 237, alpha=0.2, color='blue'))
+    data[varname].plot(cmap='terrain', cbar_kwargs={"label": "Height (m)"}, add_labels=False)
+    # ax.add_patch(patches.Rectangle((0, 871), 239, 116, alpha=0.2, color='red')) #old NVL
+    # ax.add_patch(patches.Rectangle((100, 553), 150, 237, alpha=0.2, color='blue')) #old MDV
+    ax.add_patch(patches.Rectangle((84, 745), 139, 228, alpha=0.2, color='red'))
+    ax.add_patch(patches.Rectangle((119, 620), 128, 102, alpha=0.2, color='blue'))
     ax.add_patch(patches.Rectangle((0, 553), 250, 434, alpha=0.2, color='white'))
+    plt.title('Locations of the subdomains')
     plt.show()
 
 def oneplot(wrf_grid='sfc_wrfout_d03_2018021800_f023.nc', ds_clim='ds_clim_longtermsumrunoff.nc',
@@ -119,7 +122,7 @@ def main(*, varname: str, wrfgridfile: str, inputfiles: str, outputfile: str):
         ds_new[varname].isel(Time=0).plot(ax=ax, transform=proj)
 
         #month, year = get_monthyear(files[iplot])
-        #ax.title(f'{year}-{month}')
+        plt.title(f'{year}-{month}')
 
     plt.show()
 
