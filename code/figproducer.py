@@ -8,6 +8,15 @@ import cartopy
 import salem
 from salem import open_wrf_dataset, get_demo_file
 import matplotlib.patches as patches
+import cmocean
+
+domains = {
+    'NVL': (slice(0, 239+1), slice(871, 987)), # slice(imin, imax+1), slice(jmin, jmax+1)
+    'MDV': (slice(100, 250+1), slice(553, 790)),
+    'both': (slice(0, 250+1), slice(553, 987)),
+    'NVL_new': (slice(84, 223+1), slice(745, 973+1)),
+    'MDV_new': (slice(119, 247+1), slice(620, 722+1)),
+}
 
 def get_varproj(ds_grid, ds_clim, var):
     ds_data = xr.open_dataset(ds_clim)
@@ -29,7 +38,7 @@ def get_monthyear(filename):
 
     return month, year
 
-def plotsubdom(filename='sfc_wrfout_d03_2018021800_f023.nc', varname='HGT'):
+def plotsubdoms(filename='sfc_wrfout_d03_2018021800_f023.nc', varname='HGT'):
 
     data = xr.open_dataset(filename)
 
@@ -42,6 +51,40 @@ def plotsubdom(filename='sfc_wrfout_d03_2018021800_f023.nc', varname='HGT'):
     ax.add_patch(patches.Rectangle((119, 620), 128, 102, alpha=0.2, color='blue'))
     ax.add_patch(patches.Rectangle((0, 553), 250, 434, alpha=0.2, color='white'))
     plt.title('Locations of the subdomains')
+    plt.show()
+
+def onedomplot(domain = 'NVL_new', wrf_grid='sfc_wrfout_d03_2018021800_f023.nc', ds_clim='ds_clim_longtermsumrunoff.nc',
+                varname='long_sum_SFROFF', t='Sum of surface runoff over seven summers (2013-2020)'):
+         
+     
+    ds_grid = open_wrf_dataset(wrf_grid)
+    ds_data = xr.open_dataset(ds_clim)
+ 
+    ds_data = ds_data.expand_dims('Time')
+
+    ds_grid = ds_grid.rename_dims({'time':'Time'})
+
+
+    new = ds_grid.merge(ds_data[varname], combine_attrs="override")
+
+    mask_land = new.HGT.values.reshape((1035, 675))
+    mask_land = xr.where(mask_land>0.0, 1.0, 0.0)
+
+    data = new[varname].values * mask_land
+    dom = domains[domain]
+    sub = data[0, dom[1], dom[0]] # slice data over subdom, gives 2d array
+ 
+ 
+    fig = plt.figure()
+    proj = new.salem.cartopy()
+    ax = plt.axes(projection=proj)
+    ax.coastlines()
+    ax.add_feature(cartopy.feature.BORDERS, linestyle=':')
+    ax.set_extent(new.salem.grid.extent, crs=proj)
+    ax.set_title(t)
+
+    sub.plot.pcolormesh(ax=ax, transform=proj, vmin=0.0, vmax=1500, cmap=cmocean.cm.ice_r, 
+        cbar_kwargs={"label": "surface runoff (mm)"}, add_labels=False) 
     plt.show()
 
 def oneplot(wrf_grid='sfc_wrfout_d03_2018021800_f023.nc', ds_clim='ds_clim_longtermsumrunoff.nc',
@@ -80,6 +123,7 @@ def oneplot(wrf_grid='sfc_wrfout_d03_2018021800_f023.nc', ds_clim='ds_clim_longt
     plt.show()
 
     #contourf for contourss instead
+
 
 def main(*, varname: str, wrfgridfile: str, inputfiles: str, outputfile: str):
     """
