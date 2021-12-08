@@ -15,6 +15,54 @@ def processcsv(csvfile='NVL.csv'):
 
 	return data
 
+def plotsfcrunoff(csvfile1='NVL_new.csv', csvfile2='MDV_new.csv', varname='sfcrunoffs', ylabel='Daily sum of degree day pixels (K)', titl='Timeseries of cumulative surface runoff in '):
+
+	"""
+	Plots timeseries subplot for summers of the spatial sum of sfc runoff
+
+	@param csvfile directory of csv file 
+
+	"""
+
+	data1 = processcsv(csvfile1)
+	data2 = processcsv(csvfile2)
+
+	#plot each summer timeseries on a seperate subplot
+	ncol=1
+	nrow = 7
+
+	fig, axes = plt.subplots(nrow, ncol, figsize=(20,40), sharex=False, sharey=True, constrained_layout=True)
+	for iplot in range(nrow):
+		i = iplot // ncol
+		dtmin = datetime(year=(i+2013), month=11, day=1)
+		dtmax = dtmin + timedelta(days=150)
+		summer1 = data1[(data1['date'] >= dtmin) & (data1['date'] < dtmax)]
+		summer2 = data2[(data2['date'] >= dtmin) & (data2['date'] < dtmax)]
+
+		axes[i].plot(summer1.date, summer1.sfcrunoffs, color='red', label='NVL')
+		axes[i].plot(summer1.date, summer2.sfcrunoffs, color='blue', label='MDV')
+		axes[i].plot(summer1.date, (summer1.sfcrunoffs * (1088/2641)), color='green', label='NVL scaled') #scaling factor calculated from pixel area
+
+		axes[i].set_ylabel("Daily total surface runoff (mm)", color='black', fontsize=14)
+		axes[i].set_ylim(bottom=data1[varname].min(), top=data1[varname].max())
+		#axes[i].legend(loc=0)
+
+	lines_1, labels_1 = axes[i].get_legend_handles_labels()
+
+	lines = lines_1
+	labels = labels_1
+
+	axes[0].legend(lines, labels, loc=0)
+
+	fig.supxlabel("Date")
+	#fig.supylabel("Daily total surface runoff (mm)")
+	fig.suptitle(titl + csvfile1.split(".")[0].split("_")[0] + ' and ' + csvfile2.split(".")[0].split("_")[0], fontsize=25)
+	#plt.subplots_adjust(hspace=0.1)
+	#plt.tight_layout()
+
+	#plt.savefig(varname + csvfile1.split(".")[0] + '.png')
+	plt.savefig(varname + csvfile1.split(".")[0].split("_")[0] + csvfile2.split(".")[0].split("_")[0] + '.png')
+	plt.close('all')
 
 
 
