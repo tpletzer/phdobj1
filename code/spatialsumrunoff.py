@@ -9,6 +9,8 @@ domains = {
 	'NVL': (slice(0, 239+1), slice(871, 987)), # slice(imin, imax+1), slice(jmin, jmax+1)
 	'MDV': (slice(100, 250+1), slice(553, 790)),
 	'both': (slice(0, 250+1), slice(553, 987)),
+	'NVL_new': (slice(84, 223+1), slice(745, 973+1)),
+	'MDV_new': (slice(119, 247+1), slice(620, 722+1)),
 }
 
 
