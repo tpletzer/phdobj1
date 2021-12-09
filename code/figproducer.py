@@ -80,10 +80,10 @@ def onedomplot(domain = 'NVL_new', wrf_grid='sfc_wrfout_d03_2018021800_f023.nc',
     ax = plt.axes(projection=proj)
     ax.coastlines()
     ax.add_feature(cartopy.feature.BORDERS, linestyle=':')
-    ax.set_extent(new.salem.grid.extent, crs=proj)
+    #ax.set_extent(new.salem.grid.extent, crs=proj) #activate to see full d03
     ax.set_title(t)
 
-    sub.plot.pcolormesh(ax=ax, transform=proj, vmin=0.0, vmax=1500, cmap=cmocean.cm.ice_r, 
+    sub.plot.pcolormesh(ax=ax, transform=proj, vmin=sub.min(), vmax=sub.max(), cmap=cmocean.cm.ice_r, 
         cbar_kwargs={"label": "surface runoff (mm)"}, add_labels=False) 
     plt.show()
 
