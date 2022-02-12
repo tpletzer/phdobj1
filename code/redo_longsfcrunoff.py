@@ -14,15 +14,16 @@ def pretime(ds):
     ds = ds.expand_dims('Time')
     return ds
 
-summermo = ['11', '12', '01', '02', '03']
+#summermo = ['11', '12', '01', '02', '03']
 
-for mo in range(0, len(summermo)):
-    files = glob.glob('/nesi/project/uoo03104/amps_monthly/monthlyredosfcrunoff_summerd03/*' + summermo[mo] + '.nc') ###check this
+#for mo in range(0, len(summermo)):
+    # files = glob.glob('/nesi/project/uoo03104/amps_monthly/monthlysumrunoff2_summerd03/*' + summermo[mo] + '.nc') ###check this
+    files = glob.glob('/nesi/project/uoo03104/amps_monthly/monthlysumrunoff2_summerd03/*')
     print(files)
     mf_ds = xr.Dataset()
     ds = xr.open_mfdataset(files, preprocess = pretime, concat_dim='Time', combine='nested')
     for v2 in ds.var():
-		if v2.startswith("mo_sum"):
+        if v2.startswith("mo_sum"):
             mf_ds['long_' + v2[3:]] = (("south_north", "west_east"), ds[v2].sum(dim='Time').values)
             mf_ds['long_' + 'avg' + v2[3:]] = (("south_north", "west_east"), ds[v2].mean(dim='Time').values)
             mf_ds['long_' + 'std' + v2[3:]] = (("south_north", "west_east"), ds[v2].std(dim='Time').values)
@@ -40,5 +41,5 @@ for mo in range(0, len(summermo)):
             continue
 
 
-mf_ds.to_netcdf('/nesi/nobackup/uoo03104/longtermavg_summerd03/ds_clim_longterm_redosfrunoff' + '.nc')
+mf_ds.to_netcdf('/nesi/project/uoo03104/amps_longterm/longtermsumrunoff_summerd03/ds_clim_longterm_redosfrunoff' + '.nc')
 
