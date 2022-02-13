@@ -39,7 +39,7 @@ def daily_stats(*, start_index: int=0, end_index: int=-1):
                # mf_ds['sum_' + v + str(ymd)] = (("south_north", "west_east"), ds[v].sum(dim='Time').values)
             else:
                 continue
-        mf_ds.to_netcdf('/nesi/nobackup/uoo03104/dailysumrunoff2_summerd03/ds_clim_dailysumrunoff_' + ymd + '.nc')
+        mf_ds.to_netcdf('/nesi/project/uoo03104/amps_daily/dailysumrunoff2_summerd03/ds_clim_dailysumrunoff_' + ymd + '.nc')
         mf_ds.close()
         print(ymd)
 
