@@ -5,53 +5,29 @@ import pickle
 import glob
 import xarray as xr
 
-def pretime(ds):
+def pretime(ds): 
     ds = ds.expand_dims('Time')
+    ds['HGT'] = (("south_north", "west_east"), hgt.values)
     return ds
 
 
-
-def addfield_ds(file_avg, file_sfroff):
-    ## create a ds merges two fields together that have the same timestep
-
-    ds1 = xr.open_dataset(file_avg)
-    ds2 = xr.open_dataset(file_sfroff)
-    ds1['mo_avgsum_SFROFF'] = (("south_north", "west_east"), ds2['mo_avgsum_SFROFF'].values)
-
-    filename = file_avg.split('/')[-1]
-    print(filename)
-
-    ds1.to_netcdf('/nesi/project/uoo03104/amps_monthly/temp/filename')
-
-    return 
-
-
-files_avg = glob.glob('/nesi/project/uoo03104/amps_monthly/monthlyavg_summerd03/*')
-files_avg.sort()
-files_sfroff = glob.glob('/nesi/project/uoo03104/amps_monthly/monthlysumrunoff2_summerd03/*')
-files_sfroff.sort()
-
-for i in range(0, len(files_sfroff)):
-    print(i)
-    addfield_ds(files_avg[i], files_sfroff[i])
-
-
-print("done")
-
-def sfcroff_corr(file_dir, var):
+def sfcroff_corr(file_dir, var='mo_avg_T2'):
 
     # directory of files
-    files = glob.glob('/nesi/project/uoo03104/amps_monthly/temp/*')
-    files.sort()
+    ds_hgt = xr.open_dataset('/nesi/project/uoo03104/amps_daily/dailyavg_summerd03/ds_clim_dailystats_d0320180205.nc')
+    hgt = ds_hgt.avg_HGTd0320180205
 
-    #dataset of the two vars for the same timesteps and sorted (need netcdfs for each time with both fields eg. append to avg)
+    files_avg = glob.glob('/nesi/project/uoo03104/amps_monthly/monthlyavg_summerd03/*')
+    files_avg.sort()
 
-    #land mask and ice shelf mask
+    files_sfroff = glob.glob('/nesi/project/uoo03104/amps_monthly/monthlysumrunoff2_summerd03/*')
+    files_sfroff.sort()
+
+    ds_avg = xr.open_mfdataset(files_avg, concat_dim='Time', combine='nested', preprocess = pretime)
+    ds_sfroff = xr.open_mfdataset(files_sfroff, concat_dim='Time', combine='nested', preprocess = pretime)
+
+    mask_sfroff = ds_sfroff['mo_avgsum_SFROFF'].where(ds_sfroff.HGT>0.0)
+    mask_avg = ds_avg[var].where(ds_sfroff.HGT>0.0)
 
     #compute corr
-
-    #return corr
-
-    ds = xr.open_mfdataset(files, concat_dim='Time', combine='nested', )
-
-    cor = xr.corr(ds.mo_maxsum_SFROFF, ds.mo_avgsum_SFROFF, dim='Time')
+    cor = xr.corr(mask_sfroff, mask_avg, dim='Time')
