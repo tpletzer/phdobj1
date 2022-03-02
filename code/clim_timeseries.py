@@ -30,6 +30,10 @@ def time_shift(file):
 
     new_timestr = new_time.strftime("%Y%m%d%H")
 
+    # file_parts = file.split('.')[0].split('_') #['regrid', 'd03', '2015011000', 'f027']
+
+    # file_new = file_parts[0] + '_' + file_parts[1] + '_' + new_timestr[0:-2] + '00_' + new_timestr[-2:] + '.nc'
+
     return new_timestr
 
 
@@ -56,9 +60,17 @@ def clim_table():
 
 def main():
 
-    for file in files:
-        time_new = time_shift(file)
-        file_new = file.split() + time_new
+    ftime_shift = {} # keys are datetime and item is the file with forecast hour corresponding
+    for file in files:  
+        date_new = time_shift(file)
+        ftime_shift[date_new] = file
+
+    fday_shift = {} #keys: yyyymmdd #items: files with time shifted to fhour
+    for key in ftime_shift.keys():
+        fday_shift[key[:-2]]=fday_shift.get(key[:-2], [])
+        fday_shift[key[:-2]].append(ftime_shift[key])
+
+
 
     df = create_df()
 
