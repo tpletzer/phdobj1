@@ -19,7 +19,7 @@ def time_shift(file):
     f_hour = re.match(r'^(\w\w)(\w\w).*$', file.split('/')[-1].split('_')[-1].split('.')[0])
     f_hour = int(f_hour.group(2))
 
-    time_change = datetime.timedelta(hours=f_hour)
+    time_change = timedelta(hours=f_hour)
     new_time = date_and_time + time_change
 
     return date_and_time
