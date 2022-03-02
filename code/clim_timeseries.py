@@ -6,9 +6,15 @@ import glob
 import math
 import defopt
 from datetime import datetime, timedelta
+import pickle
+
 
 def create_df(file_dir):
+    # file list of hourly files in one day
+
     #open files in  df
+
+    return df
 
 def time_shift(file):
     #convert from forecast time to UTC
@@ -22,16 +28,40 @@ def time_shift(file):
     time_change = timedelta(hours=f_hour)
     new_time = date_and_time + time_change
 
-    return date_and_time
+    new_timestr = new_time.strftime("%Y%m%d%H")
+
+    return new_timestr
 
 
-def calc_meandaily(var='T2', domain='RSR'):
-    # open files and calculate the mean daily for a given variable and region
+def calc_daily(vars=['T2', 'Q2', 'U10', 'V10', 'SWDOWN', 'GLW', 'PSFC', 'RAINNC', 'SFROFF', 'UDROFF'],
+                domains=['MDV', 'RSR', 'Soil']):
+    # open files and calculate the mean and std daily for a given variables and regions
+
+
+
+def calc_monthly(vars=['T2', 'SWDOWN'], domains=['MDV', 'RSR']):
+    # open files and calculate the mean and std daily for a given variables and regions
+
 
 
 
 
 def clim_time():
+    #plot timeseries of mean daily var for 7 years
+
+def clim_table():
+    # pandas df with all avg info 
+
+    # 
+
+def main():
+
+    for file in files:
+        time_new = time_shift(file)
+        file_new = file.split() + time_new
+
+    df = create_df()
+
 
 
 
