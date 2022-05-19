@@ -30,16 +30,28 @@ WORKFLOW
 '''
 
 
+    fid_dict = {
+    'aiken_f5': 2, 
+    'bohner_b5': 14,
+    'canada_f1': 20,
+    'harnish_f11': 35,
+    'lawson_b3': 43,
+    'onyx_vnda': 55,
+    'onyx_lwright': 56,
+    }
+
+
 def main_chanobs(*, file_dir: str='/nesi/nobackup/output_files/', 
                 ob_dir: str='/nesi/nobackup/uoo03104/validation_data/streamgagedata/', 
-                ob_csv: str='stream_conc.csv'):  #need csv where each station is a col and rows are time and hourly
+                ob_csv: str='stream_conc.csv',
+                save_dir: str='/nesi/nobackup/uoo03104/plots/'):  #need csv where each station is a col and rows are time and hourly
     """
     Postprocessing workflow of channel observations
 
     @param file_dir directory of model output netcdfs
     @param  ob_dir directory of observation csv
     @param ob_csv name of csv file for observations
-
+    @param  save_dir directory to save timeseries png
 
     """
 
@@ -64,15 +76,32 @@ def main_chanobs(*, file_dir: str='/nesi/nobackup/output_files/',
 
     obs = obs.loc[obs.DATE_TIME >= t0, :] # extract same times as the simulation
     obs = obs.loc[obs.DATE_TIME <= tf, :] 
-    obs = obs.set_index('DATE_TIME') #use DATE_TIME as index
-    obs.index = obs.index.tz_localize('Antarctica/Mcmurdo').tz_convert('UTC') #convert to UTC to match model output
-    # obs['DISCHARGE RATE']=pd.to_numeric(obs['DISCHARGE RATE']) 
 
-    # def to_m3(x):
-    #     return x/1000
+    obs_piv = obs.pivot(index="DATE_TIME", columns="STRMGAGEID", values="DISCHARGE RATE") # DISCHARGE RATE is in cubic m/s and includes canada
+    obs_piv.index = obs_piv.index.tz_localize('Antarctica/Mcmurdo').tz_convert('UTC') 
+    obs_piv = obs_piv.resample('H').mean()
 
-    # obs['DISCHARGE RATE']=obs['DISCHARGE RATE'].apply(to_m3)
+    for col in obs_piv.columns:
+        try:
+            fid = fid_dict[col]
 
+            fig, ax1 = plt.subplots(ncols=1,figsize=(12, 6))
+            plt.suptitle('Hydrograph for ' + col,fontsize=24)
+            ax1.plot(chanobs_baseline.time, chanobs_baseline.sel(feature_id=fid).streamflow,label='Model', color='blue')
+            ax1.set_ylabel('Model (m3/s)', fontsize=14)
+
+            ax2 = ax1.twinx()                                                                                                         
+            ax2.plot(obs_piv.index, obs_piv[col], label='Observed', color='grey', linestyle='--')
+            ax2.set_ylabel('Observed (m3/s)', fontsize=14)
+
+            lines, labels = ax1.get_legend_handles_labels()
+            lines2, labels2 = ax2.get_legend_handles_labels()
+            ax2.legend(lines + lines2, labels + labels2)
+            plt.savefig(save_dir + 'Timeseries_' + col + '.png')
+            plt.close(fig)
+
+        except KeyError:
+            pass
 
 
 if __name__ == "__main__":
