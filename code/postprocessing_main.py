@@ -5,6 +5,8 @@ import pytz
 from pandas.plotting import register_matplotlib_converters
 import glob
 from datetime import datetime
+import defopt
+
 
 '''
 WORKFLOW
@@ -28,15 +30,22 @@ WORKFLOW
 '''
 
 
-def main_chanobs(file_dir='/nesi/nobackup/output_files/', 
-                dir_ob='/nesi/nobackup/uoo03104/validation_data/streamgagedata/', 
-                ob_csv=''):  #need csv where each station is a col and rows are time and hourly
+def main_chanobs(*, file_dir: str='/nesi/nobackup/output_files/', 
+                ob_dir: str='/nesi/nobackup/uoo03104/validation_data/streamgagedata/', 
+                ob_csv: str='stream_conc.csv'):  #need csv where each station is a col and rows are time and hourly
+    """
+    Postprocessing workflow of channel observations
+
+    @param file_dir directory of model output netcdfs
+    @param  ob_dir directory of observation csv
+    @param ob_csv name of csv file for observations
 
 
-    chanobs_baseline = xr.open_mfdataset('*CHANOBS*',
-                            combine='by_coords')
+    """
 
-    #get the time from the first and last file (in UTC)
+    chanobs_baseline = xr.open_mfdataset('*CHANOBS*', combine='by_coords') #open model output netcdfs
+
+    #extract time from the first and last file in sim (in UTC)
     files = glob.glob(file_dir + '*CHANOBS*')
     files = sorted(files) 
     t0_str = files[0].split('/')[-1].split('.')[0] #extract first time stamp of simulation
@@ -49,44 +58,25 @@ def main_chanobs(file_dir='/nesi/nobackup/output_files/',
     tf_mcm = tf_utc.tz_convert('Antarctica/Mcmurdo') #convert to mcm timezone
     tf = str(tf_mcm)[0:-6] #id for observation csv '2018-12-13 14:00:00'
 
+    #open observational data
+    obs = pd.read_csv(ob_dir + ob_csv, dtype=str)
+    obs['DATE_TIME'] = pd.to_datetime(obs['DATE_TIME']) #convert DATE_TIME to date time obj
+
+    obs = obs.loc[obs.DATE_TIME >= t0, :] # extract same times as the simulation
+    obs = obs.loc[obs.DATE_TIME <= tf, :] 
+    obs = obs.set_index('DATE_TIME') #use DATE_TIME as index
+    obs.index = obs.index.tz_localize('Antarctica/Mcmurdo').tz_convert('UTC') #convert to UTC to match model output
+    # obs['DISCHARGE RATE']=pd.to_numeric(obs['DISCHARGE RATE']) 
+
+    # def to_m3(x):
+    #     return x/1000
+
+    # obs['DISCHARGE RATE']=obs['DISCHARGE RATE'].apply(to_m3)
 
 
 
-    obs = pd.read_csv(dir_ob + ob_csv, dtype=str)
-    obs['DATE_TIME'] = pd.to_datetime(obs['DATE_TIME'])
-
-    obs = obs.loc[obs.DATE_TIME >= t0, :] #'2018-10-01 13:00:00'
-    obs = obs.loc[obs.DATE_TIME <= tf, :] #2019-04-01 00:00:00'
-    obs = obs.set_index('DATE_TIME')
-    obs.index = obs.index.tz_localize('Antarctica/Mcmurdo').tz_convert('UTC')
-    obs['DISCHARGE RATE']=pd.to_numeric(obs['DISCHARGE RATE'])
-
-    def to_m3(x):
-        return x/1000
-
-    obs['DISCHARGE RATE']=obs['DISCHARGE RATE'].apply(to_m3)
-
-
-    dir_ob = '/nesi/nobackup/uoo03104/validation_data/streamgagedata/'
-    streamgage_file2 = 'mcmlter-strm-onyx_lwright-15min-20210106.csv'
-
-    obs2 = pd.read_csv(dir_ob + streamgage_file2,dtype=str)
-    obs2['DATE_TIME'] = pd.to_datetime(obs2['DATE_TIME'])
-
-    #obs.info()
-    #obs['DATE_TIME']
-    obs2 = obs2.loc[obs2.DATE_TIME >= '2018-12-10 00:00:00', :] #'2018-10-01 13:00:00'
-    obs2 = obs2.loc[obs2.DATE_TIME <= '2018-12-29 00:00:00', :] #2019-04-01 00:00:00'
-    obs2 = obs2.set_index('DATE_TIME')
-    obs2.index = obs2.index.tz_localize('Antarctica/Mcmurdo').tz_convert('UTC')
-    obs2['DISCHARGE RATE']=pd.to_numeric(obs2['DISCHARGE RATE'])
-    obs2['DISCHARGE RATE']=obs2['DISCHARGE RATE'].apply(to_m3)
-
-    xr.set_options(display_style="html")
-    register_matplotlib_converters()
-
-
-
+if __name__ == "__main__":
+    defopt.run(main_chanobs)
 
 def main_ldasout(file_dir):
 
