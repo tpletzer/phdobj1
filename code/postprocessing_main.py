@@ -4,6 +4,7 @@ import pandas as pd
 import pytz
 from pandas.plotting import register_matplotlib_converters
 import glob
+from datetime import datetime
 
 '''
 WORKFLOW
@@ -27,10 +28,59 @@ WORKFLOW
 '''
 
 
-def main_chanobs(file_dir='/nesi/nobackup/output_files/', obs_csv):
+def main_chanobs(file_dir='/nesi/nobackup/output_files/', 
+                dir_ob='/nesi/nobackup/uoo03104/validation_data/streamgagedata/', 
+                ob_csv=''):  #need csv where each station is a col and rows are time and hourly
+
 
     chanobs_baseline = xr.open_mfdataset('*CHANOBS*',
                             combine='by_coords')
+
+    #get the time from the first and last file (in UTC)
+    files = glob.glob(file_dir + '*CHANOBS*')
+    files = sorted(files) 
+    t0_str = files[0].split('/')[-1].split('.')[0] #extract first time stamp of simulation
+    t0_dt = datetime.strptime(t0_str, '%Y%m%d%H%M') #convert to datetime obj
+
+    tf_str = files[-1].split('/')[-1].split('.')[0] #extract first time stamp of simulation
+    tf_dt = datetime.strptime(tf_str, '%Y%m%d%H%M') #convert to datetime obj
+
+
+
+
+    obs = pd.read_csv(dir_ob + ob_csv, dtype=str)
+    obs['DATE_TIME'] = pd.to_datetime(obs['DATE_TIME'])
+
+    obs = obs.loc[obs.DATE_TIME >= '2018-12-10 00:00:00', :] #'2018-10-01 13:00:00' # take this from the first file in xarray
+    obs = obs.loc[obs.DATE_TIME <= '2018-12-29 00:00:00', :] #2019-04-01 00:00:00'
+    obs = obs.set_index('DATE_TIME')
+    obs.index = obs.index.tz_localize('Antarctica/Mcmurdo').tz_convert('UTC')
+    obs['DISCHARGE RATE']=pd.to_numeric(obs['DISCHARGE RATE'])
+
+    def to_m3(x):
+        return x/1000
+
+    obs['DISCHARGE RATE']=obs['DISCHARGE RATE'].apply(to_m3)
+
+
+    dir_ob = '/nesi/nobackup/uoo03104/validation_data/streamgagedata/'
+    streamgage_file2 = 'mcmlter-strm-onyx_lwright-15min-20210106.csv'
+
+    obs2 = pd.read_csv(dir_ob + streamgage_file2,dtype=str)
+    obs2['DATE_TIME'] = pd.to_datetime(obs2['DATE_TIME'])
+
+    #obs.info()
+    #obs['DATE_TIME']
+    obs2 = obs2.loc[obs2.DATE_TIME >= '2018-12-10 00:00:00', :] #'2018-10-01 13:00:00'
+    obs2 = obs2.loc[obs2.DATE_TIME <= '2018-12-29 00:00:00', :] #2019-04-01 00:00:00'
+    obs2 = obs2.set_index('DATE_TIME')
+    obs2.index = obs2.index.tz_localize('Antarctica/Mcmurdo').tz_convert('UTC')
+    obs2['DISCHARGE RATE']=pd.to_numeric(obs2['DISCHARGE RATE'])
+    obs2['DISCHARGE RATE']=obs2['DISCHARGE RATE'].apply(to_m3)
+
+    xr.set_options(display_style="html")
+    register_matplotlib_converters()
+
 
 
 
