@@ -40,10 +40,14 @@ def main_chanobs(file_dir='/nesi/nobackup/output_files/',
     files = glob.glob(file_dir + '*CHANOBS*')
     files = sorted(files) 
     t0_str = files[0].split('/')[-1].split('.')[0] #extract first time stamp of simulation
-    t0_dt = datetime.strptime(t0_str, '%Y%m%d%H%M') #convert to datetime obj
+    t0_utc = pd.Timestamp(t0_str,tz='UTC') # convert to time
+    t0_mcm = t0_utc.tz_convert('Antarctica/Mcmurdo') #convert to mcm timezone
+    t0 = str(t0_mcm)[0:-6] #id for observation csv
 
-    tf_str = files[-1].split('/')[-1].split('.')[0] #extract first time stamp of simulation
-    tf_dt = datetime.strptime(tf_str, '%Y%m%d%H%M') #convert to datetime obj
+    tf_str = files[-1].split('/')[-1].split('.')[0] #extract last time stamp of simulation
+    tf_utc = pd.Timestamp(tf_str,tz='UTC') # convert to time
+    tf_mcm = tf_utc.tz_convert('Antarctica/Mcmurdo') #convert to mcm timezone
+    tf = str(tf_mcm)[0:-6] #id for observation csv '2018-12-13 14:00:00'
 
 
 
@@ -51,8 +55,8 @@ def main_chanobs(file_dir='/nesi/nobackup/output_files/',
     obs = pd.read_csv(dir_ob + ob_csv, dtype=str)
     obs['DATE_TIME'] = pd.to_datetime(obs['DATE_TIME'])
 
-    obs = obs.loc[obs.DATE_TIME >= '2018-12-10 00:00:00', :] #'2018-10-01 13:00:00' # take this from the first file in xarray
-    obs = obs.loc[obs.DATE_TIME <= '2018-12-29 00:00:00', :] #2019-04-01 00:00:00'
+    obs = obs.loc[obs.DATE_TIME >= t0, :] #'2018-10-01 13:00:00'
+    obs = obs.loc[obs.DATE_TIME <= tf, :] #2019-04-01 00:00:00'
     obs = obs.set_index('DATE_TIME')
     obs.index = obs.index.tz_localize('Antarctica/Mcmurdo').tz_convert('UTC')
     obs['DISCHARGE RATE']=pd.to_numeric(obs['DISCHARGE RATE'])
